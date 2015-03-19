@@ -159,7 +159,7 @@ if(number_ofErrors>0){
 	print("All names were correctly changed!")
 }
 
-
+names(tidydata)[1:66]<-namesOfVars[indices]
 
 
 
