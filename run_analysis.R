@@ -25,11 +25,16 @@ nameData <- "./UCI HAR Dataset/features.txt"
 trainDataDir <- "./UCI HAR Dataset/train/X_train.txt"
 testDataDir <- "./UCI HAR Dataset/test/X_test.txt"
 
+
 ## Read the "labels" of the data.
 # Remark: The labels only indicate the kind of activity under
 # which the measurement was taken, e.g. walking or running, and
 # is recorded as the integers 1 through 6 according to the markdown
 # accompanying the data file.
+
+feature_infoText <-readLines("./UCI HAR Dataset/features_info.txt")
+oldnames <- gsub("-XYZ","",feature_infoText[13:29],fixed=TRUE)
+
 trainLabelsDir <- "./UCI HAR Dataset/train/y_train.txt"
 testLabelsDir <- "./UCI HAR Dataset/test/y_test.txt"
 
@@ -54,12 +59,12 @@ namesOfVars <- name_list$VarName
 trainData <- read.table(trainDataDir,header=FALSE,colClasses = c("numeric"),
 				stringsAsFactor = FALSE)
 names(trainData)<- namesOfVars
-trainData$subjectId <- trainSubjectId
+trainData$subjectId <- trainSubjectId$V1
 
 testData <- read.table(testDataDir,header=FALSE,colClasses = c("numeric"),
 				stringsAsFactor = FALSE)
 names(testData)<- namesOfVars
-testData$subjectId <- testSubjectId
+testData$subjectId <- testSubjectId$V1
 
 
 
@@ -72,8 +77,8 @@ indices_mean <- grepl(tags[1],namesOfVars,fixed=TRUE)
 indices_std <- grepl(tags[2],namesOfVars,fixed=TRUE)
 indices <- indices_mean+indices_std>0
 
-data <- rbind(trainData[,indices],testData[,indices])
-data$Activity <- dataLabels
+tidydata <- rbind(trainData[,indices],testData[,indices])
+tidydata$Activity <- dataLabels
 
 
 
@@ -81,7 +86,7 @@ data$Activity <- dataLabels
 ## Renaming activities from numeric lables to descriptive strings
  labelVector <- c("WALKING", "WALKING_UPSTAIRS", "WALKING_DOWNSTAIRS",
 	"SITTING", "STANDING", "LAYING")
-data$Activity <- sapply(dataLabels, function(x) labelVector[x])
+tidydata$Activity <- sapply(dataLabels, function(x) labelVector[x])
 
 
 ## In renaming the variable names, it is worth noting that there are
@@ -89,15 +94,24 @@ data$Activity <- sapply(dataLabels, function(x) labelVector[x])
 ## to the prescribed names in the markdown that accompanies the dataset.
 ## In particular some variables have accidentally used the substring
 ## "Body" twice in a row. This happens for the variables whose name,
-## according to the markdown, should be one of the following:
+## according to the markdown "features_info.txt", should be one of the following:
 ## 	1)"fBodyAccJerkMag"
 ##	2)"fBodyGyroMag"
 ##	3)"fBodyGyroJerkMag"
+## Thse are the last 3 variables listed in the oldnames variable. 
 ## In the provided data set, some variables have these names and others
 ## have the suspiciously similar names where the substring body appears
 ## twice and consecutively, e.g. 1)"fBodyBodyAccJerkMag". No such variable
-## is described in the markdown, leading me to suspect that it is a typo.
+## is described in the markdown "features_info.txt", leading me to suspect 
+## that it is a typo even though it does appear listed in "features.txt".
 
+oldnameTypos <- sapply(15:17, function(x) gsub("fBody","fBodyBody",oldnames[x]))
+
+oldnames <- c(oldnames,oldnameTypos)
+
+## The newnames vector is going to contain the new variable names that
+## will be more descriptive of the measurements. The names are listed in
+## the same order as the entries of oldnames that will be replaced.
 newnames<-c(
 "LinearAcceleration",
 "GravityAcceleration",
@@ -121,33 +135,6 @@ newnameFixTypo <- newnames[15:17]
 
 newnames <- c(newnames,newnameFixTypo)
 
-## The oldnames could be extracted algorithmically more cleanly perhaps,
-## although the newnames would be just as ugly. Also, there is a typo in
-## some of the variables were the substring 'Body' is repeated twice,
-## unlike any of the variable names in the accompanying markdown file.
-oldnames<-c(
-"tBodyAcc",
-"tGravityAcc",
-"tBodyAccJerk",
-"tBodyGyro",
-"tBodyGyroJerk",
-"tBodyAccMag",
-"tGravityAccMag",
-"tBodyAccJerkMag",  
-"tBodyGyroMag",
-"tBodyGyroJerkMag",
-"fBodyAcc",
-"fBodyAccJerk",
-"fBodyGyro",
-"fBodyAccMag",
-"fBodyAccJerkMag",  ## Typo in actual variable names. Uses body twice. 15
-"fBodyGyroMag",	  ## Typo in actual variable names. Uses body twice. 16
-"fBodyGyroJerkMag") ## Typo in actual variable names. Uses body twice. 17
-
-oldnameTypos <- sapply(15:17, function(x) gsub("fBody","fBodyBody",oldnames[x]))
-
-oldnames <- c(oldnames,oldnameTypos)
-
 
 ## Note that we need to order them by decreasing length so that variable 
 ## names which are substrings of other names dont get overwritten 
@@ -161,6 +148,7 @@ for(j in 1:length(oldnames)){
 	namesOfVars <- gsub(oldnames[j],newnames[j],namesOfVars,fixed= TRUE)
 }
 
+
 ## Check that the renaming of the relevant variables was successful
 
 wrong_nameIndex <- namesOfVars[indices]==name_list[indices,]$VarName
@@ -170,5 +158,8 @@ if(number_ofErrors>0){
 }else{
 	print("All names were correctly changed!")
 }
+
+
+
 
 
