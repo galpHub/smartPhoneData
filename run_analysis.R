@@ -163,3 +163,11 @@ names(tidydata)[1:66]<-namesOfVars[indices]
 
 
 
+## New tidy table. This table contains the mean for each variable in the tidy
+## data set, within each combination of subject-by-activity. Consequently,
+## the columns of the matrix resulting from the following code
+tidySplit <- split(tidydata[,1:66],list(tidydata$subjectId,tidydata$Activity))
+tidytable <- sapply(tidySplit,colMeans)
+## have column names in the format of subjectId.Activity where subjectId is an
+## integer and Activity is a character string indicating the activity (e.g. "WALKING")
+
