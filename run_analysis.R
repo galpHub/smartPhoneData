@@ -2,7 +2,7 @@
 library(downloader)
 
 newDirectory <- "./CleanData/Week3/smartPhoneData"
-if(!dir.exists(newDirectory)){
+if(!file.exists(newDirectory)){
 	dir.create(newDirectory,recursive=TRUE)
 }
 setwd(newDirectory)
