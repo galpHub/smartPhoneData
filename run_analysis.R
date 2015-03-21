@@ -1,5 +1,4 @@
 ## Creating a tidy directory
-library(downloader)
 
 newDirectory <- "./CleanData/Week3/smartPhoneData"
 if(!file.exists(newDirectory)){
@@ -8,6 +7,7 @@ if(!file.exists(newDirectory)){
 setwd(newDirectory)
 
 ## Downloading the data file.
+library(downloader)
 destFile <- "smartphone.zip"
 dataUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
 if(!file.exists(destFile)){
@@ -166,8 +166,9 @@ names(tidydata)[1:66]<-namesOfVars[indices]
 ## New tidy table. This table contains the mean for each variable in the tidy
 ## data set, within each combination of subject-by-activity. Consequently,
 ## the columns of the matrix resulting from the following code
-tidySplit <- split(tidydata[,1:66],list(tidydata$subjectId,tidydata$Activity))
-tidytable <- sapply(tidySplit,colMeans)
+	tidySplit <- split(tidydata[,1:66],list(tidydata$subjectId,tidydata$Activity))
+	tidyTable <- sapply(tidySplit,colMeans)
 ## have column names in the format of subjectId.Activity where subjectId is an
 ## integer and Activity is a character string indicating the activity (e.g. "WALKING")
 
+write.table(tidyTable,file="tidyTable.txt",row.names=FALSE)
